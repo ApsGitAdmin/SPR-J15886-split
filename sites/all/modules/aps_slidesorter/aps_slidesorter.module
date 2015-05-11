@@ -1,0 +1,66 @@
+<?php
+/**
+ * @file
+ *
+ * Deals with the uploading of the presentation file
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function aps_slidesorter_menu() {
+	// Create a page to listen for new entityqueues being made
+	$items['ajax/aps_slidesorter/saved/%'] = array(
+	    'title' => t('Create new Saved Entityqueue'), 
+	    'page callback' => 'aps_slidesorter_saved_queue',
+	    'page arguments' => array(3), 
+	    'access arguments' => array('access content'), 
+	);
+	$items['ajax/aps_slidesorter/archived/%'] = array(
+	    'title' => t('Create new Archived Entityqueue'), 
+	    'page callback' => 'aps_slidesorter_archived_queue', 
+	    'page arguments' => array(3), 
+	    'access arguments' => array('access content'), 
+	);
+
+	// Create a page to listen to which slide deck to return
+	$items['ajax/aps_slidesorter/deck/%/%'] = array(
+		'title' => t('Return loaded slide deck'),
+		'page callback' => 'aps_slidesorter_load_deck',
+		'page arguments' => array(3,4),
+		'access arguments' => array('access content'),
+		'delivery callback' => 'aps_slidesorter_ajax_deliver',
+	);
+
+  return $items;
+}
+
+function aps_slidesorter_saved_queue($arg) {
+	if (!empty($arg)) {
+		$args = explode(' ', $arg);
+		rules_invoke_event('aps_slidesorter_create_saved_queue', $args);
+	}
+}
+
+function aps_slidesorter_archived_queue($arg) {
+	if (!empty($arg)) {
+		$args = explode(' ', $arg);
+		rules_invoke_event('aps_slidesorter_create_archived_queue', $args);
+	}
+}
+
+function aps_slidesorter_load_deck($display, $id) {
+	if (!empty($display) && !empty($id)) {
+		$view = views_get_view('slides_display');
+		if (!$view || !$view->access($display)) {
+			return;
+		}
+
+		$output = $view->preview($display, array($id));
+		return $output;
+	}
+}
+
+function aps_slidesorter_ajax_deliver($page_callback_result) {
+	print $page_callback_result;
+}

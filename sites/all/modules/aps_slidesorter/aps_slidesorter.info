@@ -1,0 +1,4 @@
+name = aps Slide Sorter
+description = Slide Sorter content controls
+core = 7.x
+package = aps
